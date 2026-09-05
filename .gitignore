@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+data/raw/
+data/clean/
+data/output/*.db
+data/output/*.sql
+.netlify/
+dist/
+.DS_Store

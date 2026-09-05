@@ -1,0 +1,22 @@
+{
+  "name": "iuris",
+  "version": "1.0.0",
+  "description": "Tutor juridico virtual para docencia de grado en Derecho",
+  "type": "module",
+  "license": "AGPL-3.0-or-later",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "echo sin-build",
+    "deploy": "netlify deploy --prod"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.14.0",
+    "dotenv": "^17.4.2"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.38.0"
+  }
+}

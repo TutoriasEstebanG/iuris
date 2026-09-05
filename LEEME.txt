@@ -1,0 +1,78 @@
+╔═══════════════════════════════════════════════════════════════╗
+║              IURIS — TUTOR JURIDICO VIRTUAL                   ║
+╚═══════════════════════════════════════════════════════════════╝
+
+PASOS PARA ARRANCAR
+────────────────────────────────────────────────────────────────
+
+  1. Instalar dependencias
+
+     ./scripts/setup.sh
+
+
+  2. Configurar la API key
+
+     nano .env
+     → completar ANTHROPIC_API_KEY
+
+     Obtenela en:
+     https://console.anthropic.com/settings/keys
+
+     ⚠ IMPORTANTE: configurá también un limite de gasto en
+       https://console.anthropic.com/settings/limits
+
+
+  3. Levantar el servidor
+
+     ./scripts/dev.sh
+
+     → abrir http://localhost:8888
+
+
+  4. (Opcional) Cargar el corpus normativo
+
+     source .venv/bin/activate
+     cd ingesta
+     python main.py --solo-validar    # validar primero
+     python main.py                   # ingesta completa
+
+
+  5. (Opcional) Desplegar en Netlify
+
+     ./scripts/deploy.sh
+
+
+FUNCIONA SIN CORPUS
+────────────────────────────────────────────────────────────────
+La app funciona sin base de datos, pero sin anclaje normativo:
+responde en plano dogmatico y advierte que no tiene las fuentes
+a la vista. Con el corpus cargado, cita articulos verificables.
+
+
+ADVERTENCIA
+────────────────────────────────────────────────────────────────
+Contenido con fines exclusivamente academicos.
+No constituye asesoramiento juridico profesional.
+Las normas se reforman: verificá siempre en fuente oficial.
+
+
+LICENCIA
+────────────────────────────────────────────────────────────────
+AGPL-3.0 para uso academico.
+
+
+AGREGAR UN CUERPO NORMATIVO
+────────────────────────────────────────────────────────────────
+  1. Escribir ingesta/ingesta_XXX.py (copiar ingesta_cn.py como base)
+  2. python ingesta_XXX.py --solo-validar    # revisar el reporte
+  3. Verificar 20 articulos contra la fuente oficial. No omitir.
+  4. python ingesta_XXX.py                   # carga incremental
+  5. python generar_cobertura.py             # actualiza el guardrail
+  6. Reiniciar el servidor
+
+ACTUALIZAR POR REFORMA O DEROGACION
+────────────────────────────────────────────────────────────────
+  1. python main.py --forzar-descarga
+  2. python diff_corpus.py articulos         # que cambio
+  3. Revisar los cambios uno por uno
+  4. cp data/output/articulos.json data/output/articulos.anterior.json

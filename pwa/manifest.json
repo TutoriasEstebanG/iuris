@@ -1,0 +1,17 @@
+{
+  "name": "Iuris — Tutor Juridico Virtual",
+  "short_name": "Iuris",
+  "description": "Agente de IA para docencia de grado en Derecho",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0f1419",
+  "theme_color": "#7b1113",
+  "lang": "es-AR",
+  "categories": [
+    "education",
+    "productivity"
+  ],
+  "icons": []
+}

@@ -1,0 +1,192 @@
+/**
+ * Iuris — Funcion principal de chat con RAG
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+import { Retriever } from "./lib/retriever.js";
+import { sanitizarContexto, verificarSanitizado } from "./lib/sanitizador.js";
+import { VerificadorCitas } from "./lib/verificador.js";
+import { construirSystemPrompt, formatearContexto, PROMPT_RAG }
+  from "./lib/prompts.js";
+import { evaluarCobertura } from "./lib/cobertura.js";
+
+const CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+const RX_ANCLAJE = /art(?:\.|[íi]culo)|c[óo]digo|ley\s+\d|CCyC|CPCC|norma|vigent|deroga|inciso|regula|establece|dispone|plazo|pena|requisito|elemento/i;
+
+export default async (request) => {
+  if (request.method === "OPTIONS")
+    return new Response(null, { status: 204, headers: CORS });
+  if (request.method !== "POST")
+    return json({ error: "Metodo no permitido" }, 405);
+
+  const t0 = Date.now();
+
+  try {
+    const { modo = "clase", perfil = {}, mensajes = [] } = await request.json();
+    if (!Array.isArray(mensajes) || !mensajes.length)
+      return json({ error: "Sin mensajes" }, 400);
+
+    const consulta = mensajes[mensajes.length - 1].content;
+    if (!consulta || consulta.length > 8000)
+      return json({ error: "Consulta invalida" }, 400);
+
+    // ═══ RECUPERACION ═══
+    let contexto = { normas: [], advertencias: [] };
+    let resultado = null;
+    const necesita = !["metodo", "plan"].includes(modo) &&
+      (RX_ANCLAJE.test(consulta) ||
+       ["clase","caso","examen","socratico"].includes(modo));
+
+    if (necesita) {
+      try {
+        resultado = await new Retriever().recuperar(consulta, { topK: 8 });
+        contexto.normas = resultado.documentos;
+        for (const d of resultado.documentos) {
+          if (d.estado === "derogado")
+            contexto.advertencias.push({
+              nivel: "critica",
+              texto: `El art. ${d.articulo} ${d.sigla} esta DEROGADO.`,
+            });
+        }
+      } catch (e) {
+        console.error("[chat] recuperacion:", e.message);
+      }
+    }
+
+    // ═══ SANITIZACION ═══
+    const limpio = sanitizarContexto(contexto);
+    verificarSanitizado(limpio);
+
+    // ═══ PROMPT ═══
+    let system = construirSystemPrompt(modo, perfil);
+    system += limpio.normas.length
+      ? "\n\n" + PROMPT_RAG + "\n\n" +
+        formatearContexto(limpio.normas, limpio.advertencias)
+      : "\n\n" + formatearContexto([], []);
+
+    // ═══ GUARDRAIL DE COBERTURA ═══
+    const cob = evaluarCobertura(consulta);
+    if (cob.aviso) {
+      system += cob.aviso;
+      contexto.advertencias.push({
+        nivel: "critica",
+        texto: `Sin corpus de: ${cob.ramas.join(", ")}. `
+             + `La respuesta no esta anclada en fuentes de esa rama.`,
+      });
+      console.log("[cobertura] ramas ausentes:", cob.ramas.join(","));
+    }
+
+    // ═══ LLM ═══
+    const SIMPLES = ["glosario","fichas","mapa","plan","metodo"];
+    const modelo = SIMPLES.includes(modo) && limpio.normas.length < 5
+      ? (process.env.MODELO_ECONOMICO || "claude-haiku-4-5")
+      : (process.env.MODELO_PRINCIPAL || "claude-sonnet-4-5");
+
+    const up = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": process.env.ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: modelo, max_tokens: 4096, system,
+        messages: mensajes.slice(-16).map(m => ({
+          role: m.role === "assistant" ? "assistant" : "user",
+          content: String(m.content).slice(0, 8000),
+        })),
+        stream: true,
+      }),
+    });
+
+    if (!up.ok) {
+      const err = await up.text();
+      console.error("[anthropic]", up.status, err.slice(0, 200));
+      return json({
+        error: "error_llm",
+        mensaje: up.status === 429
+          ? "Limite de uso alcanzado. Intenta en unos minutos."
+          : "Error al generar la respuesta. Verifica la API key.",
+      }, up.status === 429 ? 429 : 502);
+    }
+
+    return new Response(stream(up.body, limpio, resultado, t0), {
+      headers: {
+        ...CORS,
+        "Content-Type": "text/event-stream; charset=utf-8",
+        "Cache-Control": "no-cache, no-transform",
+        "X-Accel-Buffering": "no",
+      },
+    });
+
+  } catch (e) {
+    console.error("[chat]", e);
+    return json({ error: "error_interno", mensaje: e.message }, 500);
+  }
+};
+
+function stream(body, contexto, resultado, t0) {
+  const enc = new TextEncoder(), dec = new TextDecoder();
+  return new ReadableStream({
+    async start(ctrl) {
+      const emit = o => ctrl.enqueue(enc.encode(`data: ${JSON.stringify(o)}\n\n`));
+      try {
+        await emit({
+          tipo: "contexto",
+          dominio: resultado?.dominio || "general",
+          fuentes: contexto.normas.map(d => ({
+            id: d.id, sigla: d.sigla, articulo: d.articulo,
+            rubrica: d.rubrica, estado: d.estado,
+            jerarquia: d.jerarquia, url: d.fuente_url,
+          })),
+          advertencias: contexto.advertencias,
+        });
+
+        const reader = body.getReader();
+        let buf = "", completo = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += dec.decode(value, { stream: true });
+          const lineas = buf.split("\n");
+          buf = lineas.pop() || "";
+          for (const l of lineas) {
+            if (!l.startsWith("data: ")) continue;
+            const d = l.slice(6).trim();
+            if (d === "[DONE]") continue;
+            try {
+              const j = JSON.parse(d);
+              if (j.type === "content_block_delta" && j.delta?.text) {
+                completo += j.delta.text;
+                await emit({ delta: j.delta.text });
+              }
+            } catch {}
+          }
+        }
+
+        if (contexto.normas.length) {
+          const v = new VerificadorCitas(contexto.normas);
+          const adv = v.generarAdvertencia(v.verificar(completo));
+          if (adv) await emit({ tipo: "verificacion", ...adv });
+        }
+
+        await emit({ tipo: "fin", latencia_ms: Date.now() - t0,
+                     fuentes: contexto.normas.length });
+        ctrl.enqueue(enc.encode("data: [DONE]\n\n"));
+      } catch (e) {
+        await emit({ tipo: "error", mensaje: e.message });
+      } finally {
+        ctrl.close();
+      }
+    },
+  });
+}
+
+const json = (o, s = 200) => new Response(JSON.stringify(o), {
+  status: s, headers: { ...CORS, "Content-Type": "application/json" },
+});

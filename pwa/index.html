@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#7b1113">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Iuris">
+<link rel="manifest" href="/manifest.json">
+<link rel="stylesheet" href="/styles.css">
+<title>Iuris - Tutor Juridico Virtual</title>
+</head>
+<body>
+
+<header class="topbar">
+  <button id="btnMenu" class="icon-btn" aria-label="Menu">&#9776;</button>
+  <div class="brand">
+    <span class="brand-mark">&#9878;</span>
+    <div>
+      <h1>Iuris</h1>
+      <p id="modoActual">Modo Clase</p>
+    </div>
+  </div>
+  <button id="btnPerfil" class="icon-btn" aria-label="Perfil">&#128100;</button>
+</header>
+
+<div id="bannerCorpus" class="banner-corpus oculto"></div>
+
+<nav id="drawer" class="drawer">
+  <h2>Modos de estudio</h2>
+  <div class="modos">
+    <button class="modo-btn active" data-modo="clase">
+      <b>Clase</b><small>Desarrollo dogmatico completo</small></button>
+    <button class="modo-btn" data-modo="socratico">
+      <b>Socratico</b><small>Aprendes respondiendo</small></button>
+    <button class="modo-btn" data-modo="caso">
+      <b>Caso practico</b><small>Metodo IRAC</small></button>
+    <button class="modo-btn" data-modo="examen">
+      <b>Examen</b><small>Simulacro de mesa oral</small></button>
+    <button class="modo-btn" data-modo="corregir">
+      <b>Correccion</b><small>Devolucion con rubrica</small></button>
+    <button class="modo-btn" data-modo="mapa">
+      <b>Mapa conceptual</b><small>Esquemas y cuadros</small></button>
+    <button class="modo-btn" data-modo="fichas">
+      <b>Fichas</b><small>Repaso espaciado</small></button>
+    <button class="modo-btn" data-modo="plan">
+      <b>Plan de estudio</b><small>Cronograma realista</small></button>
+    <button class="modo-btn" data-modo="glosario">
+      <b>Glosario</b><small>Vocabulario tecnico</small></button>
+    <button class="modo-btn" data-modo="metodo">
+      <b>Metodo</b><small>Como estudiar Derecho</small></button>
+  </div>
+
+  <h2>Historial</h2>
+  <div id="listaChats" class="lista-chats"></div>
+  <button id="btnNuevo" class="btn-secundario">Nueva consulta</button>
+  <button id="btnExportar" class="btn-secundario">Exportar conversacion</button>
+
+  <p class="disclaimer">
+    Contenido con fines exclusivamente academicos.
+    No constituye asesoramiento juridico profesional.
+    Las normas se reforman: verifica en fuente oficial.
+  </p>
+</nav>
+
+<div id="overlay" class="overlay"></div>
+
+<dialog id="dlgPerfil" class="dlg">
+  <form method="dialog">
+    <h2>Perfil academico</h2>
+    <label>Pais / ordenamiento juridico
+      <select id="pPais">
+        <option>Argentina</option><option>Espana</option>
+        <option>Mexico</option><option>Chile</option>
+        <option>Colombia</option><option>Peru</option>
+        <option>Uruguay</option><option>Otro</option>
+      </select>
+    </label>
+    <label>Jurisdiccion procesal
+      <select id="pJurisdiccion">
+        <option value="AR-NAC">Nacional / Federal</option>
+        <option value="AR-CABA">CABA</option>
+        <option value="AR-BA">Buenos Aires</option>
+        <option value="AR-CBA">Cordoba</option>
+        <option value="AR-SFE">Santa Fe</option>
+        <option value="AR-MZA">Mendoza</option>
+      </select>
+    </label>
+    <label>Universidad
+      <input id="pUniversidad" placeholder="Ej.: UBA, UNC, UNLP"></label>
+    <label>Materia actual
+      <input id="pMateria" placeholder="Ej.: Civil III"></label>
+    <label>Nivel de profundidad
+      <select id="pNivel">
+        <option value="inicial">Inicial</option>
+        <option value="intermedio" selected>Intermedio</option>
+        <option value="avanzado">Avanzado</option>
+      </select>
+    </label>
+    <menu><button value="ok" class="btn-primario">Guardar</button></menu>
+  </form>
+</dialog>
+
+<main id="chat" class="chat">
+  <div class="bienvenida">
+    <span class="brand-mark grande">&#9878;</span>
+    <h2>Iuris - Tutor Juridico Virtual</h2>
+    <p>Acompanamiento docente para la carrera de Derecho.</p>
+    <div class="sugerencias">
+      <button class="sug">Diferencia entre nulidad absoluta y relativa</button>
+      <button class="sug">Explicame la teoria del delito</button>
+      <button class="sug">Requisitos de procedencia del amparo</button>
+      <button class="sug">Como se lee un fallo judicial</button>
+    </div>
+  </div>
+</main>
+
+<footer class="composer">
+  <div id="banner" class="banner oculto"></div>
+  <div class="input-wrap">
+    <textarea id="txt" rows="1" placeholder="Escribi tu consulta juridica..."></textarea>
+    <button id="btnEnviar" class="btn-enviar" aria-label="Enviar">&#10148;</button>
+  </div>
+</footer>
+
+<button id="btnInstalar" class="fab-instalar oculto">Instalar app</button>
+
+<script src="/db.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>

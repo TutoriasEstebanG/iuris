@@ -1,0 +1,171 @@
+{\rtf1\ansi\ansicpg1252\deff0
+{\fonttbl{\f0\fswiss Helvetica;}{\f1\fmodern Menlo;}}
+\fs22\sa120
+IURIS \u8212? Instalaci\u243?n en macOS\par
+Tutor jur\u237?dico con corpus normativo argentino\par
+\par
+\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\par
+\par
+QU\u201? ES\par
+\par
+Iuris es una herramienta de consulta sobre normativa argentina. Corre\par
+localmente en tu computadora y responde preguntas citando los art\u237?culos\par
+del corpus cargado.\par
+\par
+Corpus incluido:\par
+  \u8226?  C\u243?digo Civil y Comercial de la Naci\u243?n \u8212? 2.674 art\u237?culos\par
+  \u8226?  Constituci\u243?n Nacional \u8212? 148 unidades (incluye disposiciones transitorias)\par
+  \u8226?  C\u243?digo Penal de la Naci\u243?n \u8212? 382 art\u237?culos\par
+\par
+Total: 3.188 unidades normativas verificadas contra InfoLeg.\par
+\par
+\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\par
+\par
+ANTES DE EMPEZAR\par
+\par
+Necesit\u225?s dos cosas:\par
+\par
+1) Node.js versi\u243?n 20 o superior\par
+   Descargalo de https://nodejs.org\par
+   Eleg\u237? el instalador .pkg para macOS (Apple Silicon).\par
+   Instalaci\u243?n est\u225?ndar, siguiente-siguiente.\par
+\par
+2) Una clave de API de Anthropic\par
+   Entr\u225? a https://console.anthropic.com\par
+   Cre\u225? una cuenta y carg\u225? cr\u233?dito.\par
+\par
+   IMPORTANTE: la clave de API es distinta de una suscripci\u243?n a\par
+   Claude.ai. Aunque tengas Claude Pro, necesit\u225?s cuenta de consola\par
+   con saldo. El consumo se cobra por uso.\par
+\par
+\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\par
+\par
+INSTALACI\u211?N \u8212? PASO A PASO\par
+\par
+PASO 1. Descomprimir\par
+Doble clic en iuris-portable.zip. Se crea la carpeta iuris-portable.\par
+Movela donde quieras tenerla, por ejemplo a Documentos.\par
+\par
+PASO 2. Crear el archivo de configuraci\u243?n\par
+Abr\u237? la carpeta. Vas a ver un archivo llamado .env.ejemplo\par
+\par
+  \u8226?  Si no lo ves, presion\u225? Comando + Shift + Punto para mostrar\par
+     archivos ocultos.\par
+  \u8226?  Duplicalo (clic derecho > Duplicar).\par
+  \u8226?  Renombr\u225? la copia como .env (sin extensi\u243?n, sin "ejemplo").\par
+\par
+PASO 3. Poner la clave\par
+Abr\u237? .env con TextEdit (clic derecho > Abrir con > TextEdit).\par
+Reemplaz\u225? la l\u237?nea que dice:\par
+\par
+    ANTHROPIC_API_KEY=sk-ant-...\par
+\par
+por tu clave real. Debe quedar sin espacios ni comillas, as\u237?:\par
+\par
+    ANTHROPIC_API_KEY=sk-ant-api03-xxxxxxxxxxxxx\par
+\par
+Guard\u225? con Comando + S y cerr\u225?.\par
+\par
+PASO 4. Primer arranque\par
+Doble clic en iniciar.command\par
+\par
+macOS va a bloquearlo la primera vez con un aviso de seguridad.\par
+Es normal: el archivo no est\u225? firmado digitalmente.\par
+\par
+Para autorizarlo:\par
+  \u8226?  Clic derecho sobre iniciar.command\par
+  \u8226?  Eleg\u237? "Abrir"\par
+  \u8226?  En el di\u225?logo, clic en "Abrir" otra vez\par
+\par
+Se abre una ventana de Terminal. La primera vez tarda uno o dos\par
+minutos instalando dependencias. Vas a ver texto corriendo.\par
+\par
+Cuando termine, se abre el navegador en http://localhost:8888\par
+\par
+\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\par
+\par
+USO DIARIO\par
+\par
+Doble clic en iniciar.command\par
+El navegador se abre solo.\par
+\par
+Para cerrarlo: cerr\u225? la ventana de Terminal, o presion\u225?\par
+Control + C dentro de ella.\par
+\par
+Mientras la Terminal est\u233? abierta, Iuris funciona. Si la cerr\u225?s,\par
+se detiene.\par
+\par
+\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\par
+\par
+C\u211?MO LEER LAS RESPUESTAS\par
+\par
+Al pie de cada respuesta aparece una secci\u243?n de verificaci\u243?n:\par
+\par
+  \u8226?  "Sin respaldo en el corpus" \u8212? el sistema cit\u243? un art\u237?culo que\par
+     no est\u225? en la base. Verificalo en la fuente oficial antes de usarlo.\par
+\par
+  \u8226?  "Leyes citadas que NO est\u225?n en el corpus" \u8212? mencion\u243? leyes cuyo\par
+     texto no tiene cargado. No conf\u237?es en el n\u250?mero ni el contenido.\par
+\par
+  \u8226?  "Citas textuales que no coinciden" \u8212? reprodujo un texto que no\par
+     coincide con el corpus. Es una se\u241?al de alerta fuerte.\par
+\par
+Si consult\u225?s sobre una rama que no est\u225? cargada (laboral, procesal,\par
+administrativo, tributario), el sistema lo advierte al inicio y acota\par
+la respuesta. No inventa desarrollo extenso.\par
+\par
+\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\par
+\par
+LIMITACIONES\par
+\par
+Esta herramienta sirve para LOCALIZAR normas r\u225?pido y ver c\u243?mo se\par
+articulan entre s\u237?. La doctrina que agrega alrededor no est\u225? verificada\par
+y puede contener errores: atribuciones de fallos equivocadas,\par
+denominaciones desactualizadas, construcciones forzadas.\par
+\par
+Usala para encontrar el art\u237?culo. Para entenderlo, and\u225? al manual.\par
+\par
+Contenido con fines exclusivamente acad\u233?micos. No constituye\par
+asesoramiento jur\u237?dico profesional. Las normas se reforman:\par
+verific\u225? siempre en la publicaci\u243?n oficial.\par
+\par
+\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\par
+\par
+PROBLEMAS FRECUENTES\par
+\par
+"No se puede abrir porque proviene de un desarrollador no identificado"\par
+   Clic derecho sobre el archivo > Abrir > Abrir.\par
+\par
+"command not found: node"\par
+   Node.js no est\u225? instalado o no qued\u243? en el PATH.\par
+   Reinstalalo desde nodejs.org y reinici\u225? la Terminal.\par
+\par
+"Falta el archivo .env"\par
+   No creaste el .env o qued\u243? nombrado mal.\par
+   Verific\u225? que se llame exactamente .env, no .env.txt ni env.\par
+\par
+Error 401 o "authentication_error"\par
+   La clave de API est\u225? mal copiada o la cuenta no tiene cr\u233?dito.\par
+   Revis\u225? en console.anthropic.com\par
+\par
+El puerto 8888 est\u225? ocupado\par
+   Otra aplicaci\u243?n lo est\u225? usando. Cerrala, o edit\u225? el archivo .env\par
+   agregando una l\u237?nea: PORT=8899\par
+\par
+La p\u225?gina queda en blanco\par
+   Esper\u225? unos segundos y recarg\u225?. El servidor puede tardar en\par
+   levantar la primera vez.\par
+\par
+\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\par
+\par
+ACTUALIZAR EL CORPUS\par
+\par
+El corpus incluido es una foto del momento en que se arm\u243? el paquete.\par
+Si se reforma una norma, hay que regenerar la base desde la m\u225?quina\par
+donde est\u225? el proyecto completo y volver a empaquetar.\par
+\par
+\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\u9552?\par
+\par
+Licencia AGPL-3.0 para uso acad\u233?mico.\par
+
+}
