@@ -19,10 +19,26 @@ const BOOST = { 1: 2.2, 2: 1.5, 3: 1.0, 4: 0.85, 5: 0.7 };
 const RX_CONST = /constitucional|amparo|h[áa]beas|debido\s+proceso|garant[íi]a|convencionalidad|supremac[íi]a|derechos\s+humanos/i;
 const RX_PENAL = /delito|pena|prisi[óo]n|tipo\s+penal|dolo|antijurid|tipicidad|culpabilidad|tentativa/i;
 
+const FALLOS_CLAVE = {
+  siri: "CSJN-Fallos-239-459",
+  kot: "CSJN-Fallos-241-291",
+  arriola: "CSJN-Fallos-332-1963",
+  halabi: "CSJN-Fallos-332-111",
+  aquino: "CSJN-Fallos-327-3753",
+  madorran: "CSJN-Fallos-330-1989",
+  "rodriguez pereyra": "CSJN-Fallos-335-2333",
+  albarracini: "CSJN-Fallos-335-792",
+  mendoza: "CSJN-Fallos-331-1622",
+  sejean: "CSJN-Fallos-308-2268",
+};
+
 const STOP = new Set(["que","los","las","por","para","con","una","del",
   "sobre","cual","cuando","como","donde","puede","debe","este","esta"]);
 
-const PESOS = process.env.BM25_PESOS || "0.5,1.0,6.0,2.0,0.5";
+function obtenerPesosBM25() {
+  const p = (process.env.BM25_PESOS || "0.5,1.0,6.0,2.0,0.5").trim();
+  return /^(\d+(\.\d+)?,){4}\d+(\.\d+)?$/.test(p) ? p : "0.5,1.0,6.0,2.0,0.5";
+}
 
 const SINONIMOS = [
   ["daño moral", "consecuencias no patrimoniales"],
@@ -81,8 +97,11 @@ export class Retriever {
     docs.forEach(d => { d.score *= Math.pow(BOOST[d.jerarquia] || 1, factor); });
     docs.sort((a, b) => b.score - a.score);
 
+    const fallos = await this._jurisprudencia(consulta, 4, docs);
+
     return {
       documentos: docs.slice(0, topK),
+      jurisprudencia: fallos,
       citas_explicitas: citas,
       dominio: RX_CONST.test(consulta) ? "constitucional"
              : RX_PENAL.test(consulta) ? "penal" : "general",
@@ -118,9 +137,10 @@ export class Retriever {
   async _bm25(consulta, jur, limite) {
     const q = this._fts(consulta);
     if (!q) return [];
+    const pesos = obtenerPesosBM25();
     try {
       const filas = await consultar(`
-        SELECT n.*, bm25(normas_fts,0,${PESOS}) AS bm
+        SELECT n.*, bm25(normas_fts,0,${pesos}) AS bm
         FROM normas_fts JOIN normas n ON n.id = normas_fts.id
         WHERE normas_fts MATCH ? AND n.jurisdiccion = ?
         ORDER BY bm LIMIT ?`, [q, jur, limite]);
@@ -132,8 +152,12 @@ export class Retriever {
   }
 
   _fts(texto) {
-    const frases = [...texto.matchAll(/"([^"]+)"/g)].map(m => `"${m[1]}"`);
-    const resto = texto.replace(/"[^"]+"/g, "");
+    if (!texto || typeof texto !== "string") return "";
+    const frases = [...texto.matchAll(/"([^"]+)"/g)]
+      .map(m => m[1].replace(/[^\w\sáéíóúñü]/gi, " ").trim())
+      .filter(Boolean)
+      .map(f => `"${f}"`);
+    const resto = texto.replace(/"[^"]+"/g, " ").replace(/[^\w\sáéíóúñü]/gi, " ");
     const toks = [...resto.toLowerCase().matchAll(/[\wáéíóúñü]{4,}/g)]
       .map(m => m[0]).filter(t => !STOP.has(t)).slice(0, 16).map(t => t + "*");
     const p = [...frases, ...toks];
@@ -167,11 +191,12 @@ export class Retriever {
     const q = this._fts(consulta);
     if (!q) return docs;
     const vistos = new Set(docs.map(d => d.id));
+    const pesos = obtenerPesosBM25();
     try {
       const filas = await consultar(`
         SELECT n.* FROM normas_fts JOIN normas n ON n.id = normas_fts.id
         WHERE normas_fts MATCH ? AND n.jerarquia_normativa = 1
-        ORDER BY bm25(normas_fts,0,${PESOS}) LIMIT 10`, [q]);
+        ORDER BY bm25(normas_fts,0,${pesos}) LIMIT 10`, [q]);
       const extra = filas
         .filter(f => !vistos.has(f.id))
         .map((f, i) => {
@@ -199,6 +224,89 @@ export class Retriever {
       concordancias: j(f.concordancias, []),
       fuente_url: f.fuente_url || "",
       via, score: 0,
+    };
+  }
+
+  async _jurisprudencia(consulta, limite = 4, docsNormas = []) {
+    const mapa = new Map();
+    const low = consulta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+    // 1. Detección directa por palabras clave de autos
+    const directos = [];
+    for (const [clave, id] of Object.entries(FALLOS_CLAVE)) {
+      if (low.includes(clave)) directos.push(id);
+    }
+    if (directos.length) {
+      const ph = directos.map(() => "?").join(",");
+      try {
+        const filas = await consultar(`SELECT * FROM jurisprudencia WHERE id IN (${ph})`, directos);
+        filas.forEach((f, i) => mapa.set(f.id, { ...this._falloDoc(f, "cita_directa"), score: 100 - i }));
+      } catch (e) {
+        console.error("[jurisprudencia directos]", e.message);
+      }
+    }
+
+    // 2. Búsqueda léxica FTS5
+    const q = this._fts(consulta);
+    if (q) {
+      try {
+        const filas = await consultar(`
+          SELECT j.*, bm25(jurisprudencia_fts,0,2.0,2.0,5.0,3.0,1.5,1.0) AS bm
+          FROM jurisprudencia_fts JOIN jurisprudencia j ON j.id = jurisprudencia_fts.id
+          WHERE jurisprudencia_fts MATCH ? AND j.estado != 'derogado'
+          ORDER BY bm LIMIT ?`, [q, limite * 2]);
+        filas.forEach((f, i) => {
+          if (!mapa.has(f.id)) mapa.set(f.id, { ...this._falloDoc(f, "fts"), score: 50 - i });
+        });
+      } catch (e) {}
+    }
+
+    // 3. Vinculación con normas recuperadas
+    if (mapa.size < limite && docsNormas.length) {
+      const idsNormas = docsNormas.slice(0, 4).map(d => d.id);
+      try {
+        const todas = await consultar("SELECT * FROM jurisprudencia WHERE estado != 'derogado'");
+        for (const f of todas) {
+          if (mapa.has(f.id)) continue;
+          let citas = [];
+          try { citas = typeof f.citas_normativas === "string" ? JSON.parse(f.citas_normativas) : (f.citas_normativas || []); } catch {}
+          const coincide = citas.some(c => idsNormas.includes(c));
+          if (coincide) {
+            mapa.set(f.id, { ...this._falloDoc(f, "vinculo_normativo"), score: 30 });
+            if (mapa.size >= limite * 2) break;
+          }
+        }
+      } catch (e) {}
+    }
+
+    const fallos = [...mapa.values()];
+    fallos.sort((a, b) => b.score - a.score);
+    return fallos.slice(0, limite);
+  }
+
+  _falloDoc(f, via) {
+    const j = (v, def) => {
+      if (!v) return def;
+      try { return typeof v === "string" ? JSON.parse(v) : v; } catch { return def; }
+    };
+    return {
+      id: f.id,
+      tribunal: f.tribunal,
+      autos: f.autos,
+      fecha: f.fecha,
+      tomo: f.tomo,
+      pagina: f.pagina,
+      cita_fallos: f.tomo && f.pagina ? `Fallos ${f.tomo}:${f.pagina}` : "",
+      holding: f.holding,
+      sumario: f.sumario,
+      hechos: f.hechos || "",
+      citas_normativas: j(f.citas_normativas, []),
+      precedentes: j(f.precedentes, []),
+      materia: j(f.materia, []),
+      estado: f.estado || "vigente",
+      fuente_url: f.fuente_url || "",
+      via,
+      score: 0,
     };
   }
 }

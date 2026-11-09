@@ -9,120 +9,286 @@
 <meta name="apple-mobile-web-app-title" content="Iuris">
 <link rel="manifest" href="/manifest.json">
 <link rel="stylesheet" href="/styles.css">
-<title>Iuris - Tutor Juridico Virtual</title>
+<title>Iuris - Tutor Jurídico Virtual</title>
 </head>
 <body>
 
-<header class="topbar">
-  <button id="btnMenu" class="icon-btn" aria-label="Menu">&#9776;</button>
-  <div class="brand">
-    <span class="brand-mark">&#9878;</span>
-    <div>
-      <h1>Iuris</h1>
-      <p id="modoActual">Modo Clase</p>
+<div class="app-shell" id="appShell">
+  <!-- Barra lateral retráctil -->
+  <aside id="drawer" class="drawer" aria-label="Panel de navegación">
+    <div class="drawer-header">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="3" x2="12" y2="21"></line>
+            <path d="M4 7l8-4 8 4"></path>
+            <path d="M6 13l-3-6h6l-3 6a3 3 0 0 1-6 0z"></path>
+            <path d="M18 13l-3-6h6l-3 6a3 3 0 0 1-6 0z"></path>
+            <path d="M8 21h8"></path>
+          </svg>
+        </span>
+        <div class="brand-text">
+          <h1>Iuris</h1>
+          <p>Tutor Jurídico Virtual</p>
+        </div>
+      </div>
+      <button id="btnCerrarDrawer" class="icon-btn-ghost" aria-label="Contraer barra lateral" title="Contraer barra lateral">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
     </div>
+
+    <!-- Botón de Acción Principal -->
+    <button id="btnNuevo" class="btn-nuevo-chat">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      <span>Nueva consulta</span>
+    </button>
+
+    <div class="drawer-scroll">
+      <div class="drawer-section">
+        <h2 class="section-title">Modos de Aprendizaje</h2>
+        <div class="modos">
+          <button class="modo-btn active" data-modo="clase">
+            <b>Clase</b><small>Desarrollo dogmático completo</small>
+          </button>
+          <button class="modo-btn" data-modo="socratico">
+            <b>Socrático</b><small>Aprendés respondiendo</small>
+          </button>
+          <button class="modo-btn" data-modo="caso">
+            <b>Caso práctico</b><small>Método IRAC</small>
+          </button>
+          <button class="modo-btn" data-modo="examen">
+            <b>Examen oral</b><small>Simulacro de mesa</small>
+          </button>
+          <button class="modo-btn" data-modo="corregir">
+            <b>Corrección</b><small>Devolución con rúbrica</small>
+          </button>
+        </div>
+      </div>
+
+      <div class="drawer-section">
+        <h2 class="section-title">Herramientas Especiales</h2>
+        <div class="modos">
+          <button class="modo-btn" data-modo="documento">
+            <b>Análisis de Fallo</b><small>PDF / Pieza judicial</small>
+          </button>
+          <button class="modo-btn" data-modo="catedra">
+            <b>Cátedra a Demanda</b><small>Clase guiada con PDF</small>
+          </button>
+          <button class="modo-btn" data-modo="mapa">
+            <b>Mapa conceptual</b><small>Esquemas y cuadros</small>
+          </button>
+          <button class="modo-btn" data-modo="fichas">
+            <b>Fichas 3D</b><small>Repaso espaciado SM-2</small>
+          </button>
+          <button class="modo-btn" data-modo="plan">
+            <b>Plan de estudio</b><small>Cronograma realista</small>
+          </button>
+          <button class="modo-btn" data-modo="glosario">
+            <b>Glosario</b><small>Vocabulario técnico</small>
+          </button>
+          <button class="modo-btn" data-modo="metodo">
+            <b>Método</b><small>Cómo estudiar Derecho</small>
+          </button>
+        </div>
+      </div>
+
+      <div class="drawer-section">
+        <h2 class="section-title">Historial de Consultas</h2>
+        <div id="listaChats" class="lista-chats"></div>
+      </div>
+    </div>
+
+    <div class="drawer-footer">
+      <button id="btnExportar" class="btn-secundario">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        <span>Exportar conversación</span>
+      </button>
+
+      <p class="disclaimer">
+        Contenido con fines exclusivamente académicos. No constituye asesoramiento profesional. Las normas se reforman: verificar en fuente oficial.
+      </p>
+    </div>
+  </aside>
+
+  <!-- Overlay para móviles -->
+  <div id="overlay" class="overlay"></div>
+
+  <!-- Vista Principal: Topbar, Chat y Área de Consulta -->
+  <div class="main-viewport">
+    <header class="topbar">
+      <button id="btnMenu" class="icon-btn" aria-label="Abrir o contraer barra lateral" title="Menú lateral">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+
+      <div class="brand-topbar">
+        <span class="brand-mark-mini" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="3" x2="12" y2="21"></line>
+            <path d="M4 7l8-4 8 4"></path>
+            <path d="M6 13l-3-6h6l-3 6a3 3 0 0 1-6 0z"></path>
+            <path d="M18 13l-3-6h6l-3 6a3 3 0 0 1-6 0z"></path>
+            <path d="M8 21h8"></path>
+          </svg>
+        </span>
+        <span class="brand-name">Iuris</span>
+        <span class="separador-punto">•</span>
+        <span id="modoActual" class="modo-actual-pill">Modo Clase</span>
+      </div>
+
+      <button id="btnPerfil" class="icon-btn" aria-label="Perfil académico" title="Perfil académico">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </button>
+    </header>
+
+    <div id="bannerCorpus" class="banner-corpus oculto"></div>
+
+    <!-- Área de Chat -->
+    <main id="chat" class="chat" role="log" aria-live="polite">
+      <div class="bienvenida">
+        <span class="brand-mark grande" aria-hidden="true">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="3" x2="12" y2="21"></line>
+            <path d="M4 7l8-4 8 4"></path>
+            <path d="M6 13l-3-6h6l-3 6a3 3 0 0 1-6 0z"></path>
+            <path d="M18 13l-3-6h6l-3 6a3 3 0 0 1-6 0z"></path>
+            <path d="M8 21h8"></path>
+          </svg>
+        </span>
+        <h2>Iuris — Tutor Jurídico Virtual</h2>
+        <p>Acompañamiento docente para la carrera de Derecho: dogmática, jurisprudencia CSJN y práctica forense.</p>
+        <div class="sugerencias">
+          <button class="sug">Diferencia entre nulidad absoluta y relativa</button>
+          <button class="sug">Explicame los estratos de la teoría del delito</button>
+          <button class="sug">Requisitos de procedencia del amparo judicial</button>
+          <button class="sug">Calcular indemnización Méndez para 30 años y 20% incapacidad</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Área de Consulta (Composer Moderno y Fijo al Pie) -->
+    <footer class="composer">
+      <div class="composer-container">
+        <div id="banner" class="banner oculto"></div>
+        <div class="composer-status-bar">
+          <div class="composer-modo-pill" id="composerModoPill" title="Modo de estudio activo">
+            <span class="pill-brand">⚖️</span>
+            <span id="composerModoNombre" class="pill-text">Modo Clase</span>
+          </div>
+          <div id="chipAdjunto" class="chip-adjunto oculto" title="Documento o temario activo en la conversación">
+            <span class="icono-clip" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+              </svg>
+            </span>
+            <span id="nombreAdjunto" class="nombre-adjunto"></span>
+            <button id="btnQuitarAdjunto" type="button" class="btn-quitar" aria-label="Quitar archivo adjunto" title="Quitar archivo">&times;</button>
+          </div>
+        </div>
+
+        <div class="input-card">
+          <textarea id="txt" rows="1" placeholder="Escribí tu consulta jurídica, caso o análisis de fallo..."></textarea>
+
+          <div class="input-toolbar">
+            <div class="toolbar-tools">
+              <input type="file" id="inputArchivo" accept="application/pdf,image/png,image/jpeg,image/webp" style="display:none">
+              
+              <button id="btnAdjuntar" type="button" class="btn-tool" aria-label="Adjuntar archivo" title="Adjuntar PDF o imagen (Fallo, escrito o caso)">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                </svg>
+                <span class="tool-text">Adjuntar</span>
+              </button>
+
+              <button id="btnVoz" type="button" class="btn-tool" aria-label="Dictado por voz" title="Dictar consulta por voz">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                  <line x1="12" y1="19" x2="12" y2="23"></line>
+                  <line x1="8" y1="23" x2="16" y2="23"></line>
+                </svg>
+                <span class="tool-text">Voz</span>
+              </button>
+
+              <button id="btnManosLibres" type="button" class="btn-tool" aria-label="Modo manos libres" title="Simulacro oral interactivo continuo (hablar y escuchar)">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+                  <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+                </svg>
+                <span class="tool-text">Mesa Oral</span>
+              </button>
+            </div>
+
+            <div class="toolbar-send">
+              <button id="btnEnviar" class="btn-enviar" aria-label="Enviar consulta" title="Enviar consulta (Enter)">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="19" x2="12" y2="5"></line>
+                  <polyline points="5 12 12 5 19 12"></polyline>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
   </div>
-  <button id="btnPerfil" class="icon-btn" aria-label="Perfil">&#128100;</button>
-</header>
-
-<div id="bannerCorpus" class="banner-corpus oculto"></div>
-
-<nav id="drawer" class="drawer">
-  <h2>Modos de estudio</h2>
-  <div class="modos">
-    <button class="modo-btn active" data-modo="clase">
-      <b>Clase</b><small>Desarrollo dogmatico completo</small></button>
-    <button class="modo-btn" data-modo="socratico">
-      <b>Socratico</b><small>Aprendes respondiendo</small></button>
-    <button class="modo-btn" data-modo="caso">
-      <b>Caso practico</b><small>Metodo IRAC</small></button>
-    <button class="modo-btn" data-modo="examen">
-      <b>Examen</b><small>Simulacro de mesa oral</small></button>
-    <button class="modo-btn" data-modo="corregir">
-      <b>Correccion</b><small>Devolucion con rubrica</small></button>
-    <button class="modo-btn" data-modo="mapa">
-      <b>Mapa conceptual</b><small>Esquemas y cuadros</small></button>
-    <button class="modo-btn" data-modo="fichas">
-      <b>Fichas</b><small>Repaso espaciado</small></button>
-    <button class="modo-btn" data-modo="plan">
-      <b>Plan de estudio</b><small>Cronograma realista</small></button>
-    <button class="modo-btn" data-modo="glosario">
-      <b>Glosario</b><small>Vocabulario tecnico</small></button>
-    <button class="modo-btn" data-modo="metodo">
-      <b>Metodo</b><small>Como estudiar Derecho</small></button>
-  </div>
-
-  <h2>Historial</h2>
-  <div id="listaChats" class="lista-chats"></div>
-  <button id="btnNuevo" class="btn-secundario">Nueva consulta</button>
-  <button id="btnExportar" class="btn-secundario">Exportar conversacion</button>
-
-  <p class="disclaimer">
-    Contenido con fines exclusivamente academicos.
-    No constituye asesoramiento juridico profesional.
-    Las normas se reforman: verifica en fuente oficial.
-  </p>
-</nav>
-
-<div id="overlay" class="overlay"></div>
+</div>
 
 <dialog id="dlgPerfil" class="dlg">
   <form method="dialog">
-    <h2>Perfil academico</h2>
-    <label>Pais / ordenamiento juridico
+    <h2>Perfil académico</h2>
+    <label>País / ordenamiento jurídico
       <select id="pPais">
-        <option>Argentina</option><option>Espana</option>
-        <option>Mexico</option><option>Chile</option>
-        <option>Colombia</option><option>Peru</option>
+        <option>Argentina</option><option>España</option>
+        <option>México</option><option>Chile</option>
+        <option>Colombia</option><option>Perú</option>
         <option>Uruguay</option><option>Otro</option>
       </select>
     </label>
-    <label>Jurisdiccion procesal
+    <label>Jurisdicción procesal
       <select id="pJurisdiccion">
         <option value="AR-NAC">Nacional / Federal</option>
         <option value="AR-CABA">CABA</option>
         <option value="AR-BA">Buenos Aires</option>
-        <option value="AR-CBA">Cordoba</option>
+        <option value="AR-CBA">Córdoba</option>
         <option value="AR-SFE">Santa Fe</option>
         <option value="AR-MZA">Mendoza</option>
       </select>
     </label>
     <label>Universidad
-      <input id="pUniversidad" placeholder="Ej.: UBA, UNC, UNLP"></label>
+      <input id="pUniversidad" placeholder="Ej.: UBA, UNC, UNLP, Austral">
+    </label>
     <label>Materia actual
-      <input id="pMateria" placeholder="Ej.: Civil III"></label>
+      <input id="pMateria" placeholder="Ej.: Civil III - Contratos">
+    </label>
     <label>Nivel de profundidad
       <select id="pNivel">
-        <option value="inicial">Inicial</option>
-        <option value="intermedio" selected>Intermedio</option>
-        <option value="avanzado">Avanzado</option>
+        <option value="inicial">Inicial (Grado básico)</option>
+        <option value="intermedio" selected>Intermedio (Dogmática y práctica)</option>
+        <option value="avanzado">Avanzado (Jurisprudencia y debate)</option>
       </select>
     </label>
-    <menu><button value="ok" class="btn-primario">Guardar</button></menu>
+    <menu>
+      <button value="cancel" class="btn-secundario-dialog" type="button" onclick="document.getElementById('dlgPerfil').close()">Cancelar</button>
+      <button value="ok" class="btn-primario">Guardar perfil</button>
+    </menu>
   </form>
 </dialog>
-
-<main id="chat" class="chat">
-  <div class="bienvenida">
-    <span class="brand-mark grande">&#9878;</span>
-    <h2>Iuris - Tutor Juridico Virtual</h2>
-    <p>Acompanamiento docente para la carrera de Derecho.</p>
-    <div class="sugerencias">
-      <button class="sug">Diferencia entre nulidad absoluta y relativa</button>
-      <button class="sug">Explicame la teoria del delito</button>
-      <button class="sug">Requisitos de procedencia del amparo</button>
-      <button class="sug">Como se lee un fallo judicial</button>
-    </div>
-  </div>
-</main>
-
-<footer class="composer">
-  <div id="banner" class="banner oculto"></div>
-  <div class="input-wrap">
-    <textarea id="txt" rows="1" placeholder="Escribi tu consulta juridica..."></textarea>
-    <button id="btnEnviar" class="btn-enviar" aria-label="Enviar">&#10148;</button>
-  </div>
-</footer>
 
 <button id="btnInstalar" class="fab-instalar oculto">Instalar app</button>
 

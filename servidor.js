@@ -4,7 +4,7 @@ import { extname, join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { config } from "dotenv";
 
-config();
+config({ override: true });
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PWA = join(__dirname, "pwa");
@@ -19,12 +19,19 @@ const MIME = {
   ".svg": "image/svg+xml"
 };
 
-function leerBody(req) {
-  return new Promise(function (res) {
+function leerBody(req, limiteBytes = 15 * 1024 * 1024) {
+  return new Promise(function (res, rej) {
     if (req.method === "GET" || req.method === "HEAD") return res(null);
     var datos = "";
-    req.on("data", function (c) { datos += c; });
+    req.on("data", function (c) {
+      datos += c;
+      if (datos.length > limiteBytes) {
+        req.destroy();
+        rej(new Error("Cuerpo de solicitud demasiado grande (max 15MB)"));
+      }
+    });
     req.on("end", function () { res(datos || null); });
+    req.on("error", rej);
   });
 }
 

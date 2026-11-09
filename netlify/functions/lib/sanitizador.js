@@ -9,6 +9,9 @@ const INYECCION = [
   { rx: /disregard\s+(all\s+)?(previous|prior)\s+instructions?/gi, r: "[filtered]" },
   { rx: /^\s*(system|assistant|human|user)\s*:/gim, r: "" },
   { rx: /<\|?(system|assistant|human|endoftext|im_start|im_end)\|?>/gi, r: "" },
+  { rx: /<\/?(?:fuente|fuentes_normativas|advertencia|advertencias)[^>]*>/gi, r: "" },
+  { rx: /<script[\s\S]*?<\/script>/gi, r: "" },
+  { rx: /<\/?(?:script|style|iframe|object|embed|applet)[^>]*>/gi, r: "" },
   { rx: /╔[═]{10,}╗|╚[═]{10,}╝/g, r: "" },
   { rx: /^\s*\[FUENTE\s+\d+\]/gim, r: "" },
 ];
@@ -65,10 +68,74 @@ export function sanitizarDocumento(d) {
   };
 }
 
+export function sanitizarJurisprudencia(j) {
+  if (!j || typeof j !== "object") return null;
+  return {
+    id: String(j.id || "").replace(/[^\w\-.]/g, "").slice(0, 80),
+    tribunal: sanitizarTexto(j.tribunal, 120),
+    autos: sanitizarTexto(j.autos, 200),
+    fecha: typeof j.fecha === "string" ? j.fecha.slice(0, 10) : "",
+    cita_fallos: sanitizarTexto(j.cita_fallos, 40),
+    holding: sanitizarTexto(j.holding, 3000),
+    sumario: sanitizarTexto(j.sumario, 2000),
+    hechos: sanitizarTexto(j.hechos, 2000),
+    citas_normativas: (Array.isArray(j.citas_normativas) ? j.citas_normativas : [])
+      .slice(0, 10).map(c => sanitizarTexto(c, 40)),
+    precedentes: (Array.isArray(j.precedentes) ? j.precedentes : [])
+      .slice(0, 10).map(p => sanitizarTexto(p, 100)),
+    materia: (Array.isArray(j.materia) ? j.materia : [])
+      .slice(0, 10).map(m => sanitizarTexto(m, 40)),
+    estado: enumSeg(j.estado, ["vigente", "superado", "inaplicable"], "vigente"),
+    fuente_url: urlSeg(j.fuente_url),
+    via: sanitizarTexto(j.via, 40),
+    _sanitizado: true,
+  };
+}
+
+export function sanitizarAdjunto(adjunto) {
+  if (!adjunto || typeof adjunto !== "object") return null;
+
+  const TIPOS_VALIDOS = new Set([
+    "application/pdf",
+    "image/jpeg",
+    "image/png",
+    "image/webp"
+  ]);
+
+  const tipo = String(adjunto.tipo || "").toLowerCase().trim();
+  if (!TIPOS_VALIDOS.has(tipo)) return null;
+
+  let rawBase64 = String(adjunto.base64 || "").trim();
+  const idx = rawBase64.indexOf(";base64,");
+  if (idx !== -1) {
+    rawBase64 = rawBase64.slice(idx + 8).trim();
+  }
+
+  // Límite de 10MB en base64 (~14M caracteres)
+  if (!rawBase64 || rawBase64.length > 14 * 1024 * 1024) return null;
+  if (!/^[A-Za-z0-9+/=]+$/.test(rawBase64)) return null;
+
+  const nombreRaw = String(adjunto.nombre || "documento").trim();
+  const nombreSinPath = nombreRaw.split(/[/\\]/).pop() || "documento";
+  const nombre = nombreSinPath
+    .replace(/\.{2,}/g, "_")
+    .replace(/[^\w\s.\-]/gi, "_")
+    .slice(0, 120);
+
+  return {
+    tipo,
+    nombre,
+    base64: rawBase64,
+    _sanitizado: true
+  };
+}
+
 export function sanitizarContexto(ctx) {
   return {
     normas: (ctx.normas || []).map(sanitizarDocumento)
       .filter(Boolean).slice(0, 20),
+    jurisprudencia: (ctx.jurisprudencia || []).map(sanitizarJurisprudencia)
+      .filter(Boolean).slice(0, 6),
     advertencias: (ctx.advertencias || []).slice(0, 10).map(a => ({
       nivel: enumSeg(a.nivel, ["baja","media","alta","critica"], "media"),
       texto: sanitizarTexto(a.texto, 400),
@@ -79,6 +146,6 @@ export function sanitizarContexto(ctx) {
 
 export function verificarSanitizado(ctx) {
   if (!ctx._sanitizado)
-    throw new Error("REGLA 6 VIOLADA: contexto sin sanitizar");
+    throw new Error("Contexto sin sanitizar: debe invocarse sanitizarContexto()");
   return true;
 }

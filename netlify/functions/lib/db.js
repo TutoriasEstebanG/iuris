@@ -40,9 +40,16 @@ export async function verificarCorpus() {
       "SELECT COUNT(*) AS n FROM normas WHERE estado != 'derogado'");
     const cuerpos = await consultar(
       "SELECT sigla, COUNT(*) AS n FROM normas GROUP BY sigla ORDER BY n DESC");
+    let fallos = 0;
+    try {
+      const j = await consultarUno(
+        "SELECT COUNT(*) AS n FROM jurisprudencia WHERE estado != 'derogado'");
+      fallos = Number(j?.n || 0);
+    } catch {}
     return {
       ok: Number(r.n) > 0,
       articulos: Number(r.n),
+      fallos,
       cuerpos: cuerpos.map(c => ({ sigla: c.sigla, articulos: Number(c.n) })),
     };
   } catch (e) {

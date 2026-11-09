@@ -4,6 +4,13 @@
  */
 import { verificarCorpus } from "./lib/db.js";
 
+function normalizarModelo(nombre, porDefecto) {
+  const m = String(nombre || porDefecto || "").trim();
+  if (m.includes("3-5-sonnet") || m.includes("sonnet-4-5")) return "claude-sonnet-5";
+  if (m.includes("3-5-haiku") || m.includes("haiku-4-5")) return "claude-haiku-5-5";
+  return m || porDefecto;
+}
+
 export default async () => {
   const t0 = Date.now();
   const estado = {
@@ -12,7 +19,7 @@ export default async () => {
     servicios: {
       anthropic: {
         configurado: !!process.env.ANTHROPIC_API_KEY,
-        modelo: process.env.MODELO_PRINCIPAL || "claude-sonnet-4-5",
+        modelo: normalizarModelo(process.env.MODELO_PRINCIPAL, "claude-sonnet-5"),
       },
     },
   };

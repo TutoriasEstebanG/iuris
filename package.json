@@ -9,6 +9,7 @@
   },
   "scripts": {
     "dev": "netlify dev",
+    "test": "node --test tests/*.test.mjs && LOCAL_DB_PATH=./data/output/iuris.db node ingesta/eval_real.mjs",
     "build": "echo sin-build",
     "deploy": "netlify deploy --prod"
   },

@@ -1,6 +1,15 @@
-const CACHE = "iuris-v1";
-const ESTATICOS = ["/", "/index.html", "/styles.css", "/app.js",
-                   "/db.js", "/manifest.json"];
+const CACHE = "iuris-v4";
+const ESTATICOS = [
+  "/",
+  "/index.html",
+  "/styles.css",
+  "/app.js",
+  "/db.js",
+  "/manifest.json",
+  "/icons/icon-192.png",
+  "/icons/icon-512.png",
+  "/icons/icon-maskable-512.png"
+];
 
 self.addEventListener("install", e => {
   e.waitUntil(

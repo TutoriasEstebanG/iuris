@@ -49,7 +49,7 @@ set_env() {
 set_env ANTHROPIC_API_KEY "${ANTHROPIC_API_KEY:-}"
 set_env TURSO_DATABASE_URL "${TURSO_DATABASE_URL:-}"
 set_env TURSO_AUTH_TOKEN "${TURSO_AUTH_TOKEN:-}"
-set_env MODELO_PRINCIPAL "${MODELO_PRINCIPAL:-claude-sonnet-4-5}"
+set_env MODELO_PRINCIPAL "${MODELO_PRINCIPAL:-claude-sonnet-5}"
 
 echo -e "\n${B}[4/4] Desplegando${N}"
 echo "───────────────────────────────────────────────────────"

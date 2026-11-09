@@ -7,7 +7,29 @@
 const LEYES_CORPUS = {
   "26994": "CCyC",
   "24430": "CN",
+  "11179": "CP",
 };
+
+const MAPA_SIGLAS = {
+  ccyc: "CCyC", "codigo civil y comercial": "CCyC", "codigo civil": "CCyC",
+  cp: "CP", "codigo penal": "CP",
+  cn: "CN", "constitucion": "CN", "constitucion nacional": "CN",
+  cadh: "CADH", lct: "LCT", cpccn: "CPCCN"
+};
+
+const PATRON_CUERPOS = "c[oó]digo\\s+civil(?:\\s+y\\s+comercial)?|c[oó]digo\\s+penal|constituci[oó]n(?:\\s+nacional)?|cadh|ccyc|cpccn|cp|cn|[A-Z]{2,6}";
+const RX_CITAS = new RegExp(
+  `\\bart(?:\\.|[íi]culo)?\\s*(\\d+(?:\\s*(?:bis|ter|quater|quinquies|sexies))?)` +
+  `(?:[,\\s]*(?:inc(?:iso)?\\.?\\s*\\w+|p[áa]rr(?:afo)?\\.?\\s*\\w+|ap(?:artado)?\\.?\\s*\\w+))*` +
+  `(?:[,\\s]*(?:d?e?l?\\s*(?:la\\s+)?)?)` +
+  `(${PATRON_CUERPOS})\\b`,
+  "gi"
+);
+
+function normalizarTexto(s) {
+  return (s || "").toLowerCase().normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "").replace(/\./g, "").trim();
+}
 
 export class VerificadorCitas {
   constructor(documentos = []) {
@@ -64,10 +86,16 @@ export class VerificadorCitas {
   }
 
   _citas(t) {
-    const rx = /\b[Aa]rt(?:\.|ículo)?\s*(\d+(?:\s*(?:bis|ter|quater))?)\s*([A-Z][A-Za-z]{1,6})\b/g;
-    const out = []; let m;
-    while ((m = rx.exec(t)) !== null)
-      out.push({ articulo: m[1].trim(), sigla: m[2] });
+    const out = [];
+    let m;
+    RX_CITAS.lastIndex = 0;
+    while ((m = RX_CITAS.exec(t)) !== null) {
+      const art = m[1].replace(/\s+/g, " ").trim();
+      const rawCuerpo = (m[2] || "").trim();
+      const norm = normalizarTexto(rawCuerpo);
+      const sigla = MAPA_SIGLAS[norm] || rawCuerpo.toUpperCase();
+      out.push({ articulo: art, sigla });
+    }
     return out;
   }
 
@@ -102,13 +130,24 @@ export class VerificadorCitas {
   }
 
   _sim(a, b) {
-    const n = s => s.toLowerCase().normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s]/g, "")
-      .replace(/\s+/g, " ").trim();
-    const A = new Set(n(a).split(" ")), B = new Set(n(b).split(" "));
-    if (!B.size) return 0;
-    let i = 0; for (const w of B) if (A.has(w)) i++;
-    return i / B.size;
+    const sA = normalizarTexto(a).replace(/[^\w\s]/g, "").replace(/\s+/g, " ").trim();
+    const sB = normalizarTexto(b).replace(/[^\w\s]/g, "").replace(/\s+/g, " ").trim();
+    if (!sB.length || !sA.length) return 0;
+    if (sA.includes(sB)) return 1.0;
+    const palabrasA = sA.split(" "), palabrasB = sB.split(" ");
+    if (palabrasB.length < 2) {
+      return palabrasA.includes(palabrasB[0]) ? 1.0 : 0;
+    }
+    const bigramasA = new Set();
+    for (let i = 0; i < palabrasA.length - 1; i++) {
+      bigramasA.add(`${palabrasA[i]} ${palabrasA[i + 1]}`);
+    }
+    let coinciden = 0;
+    const totalB = palabrasB.length - 1;
+    for (let i = 0; i < totalB; i++) {
+      if (bigramasA.has(`${palabrasB[i]} ${palabrasB[i + 1]}`)) coinciden++;
+    }
+    return coinciden / totalB;
   }
 
   generarAdvertencia(inf) {

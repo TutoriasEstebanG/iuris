@@ -15,8 +15,8 @@ find "$DEST" -name "*.pyc" -delete
 cat > "$DEST/.env.ejemplo" <<'ENV'
 ANTHROPIC_API_KEY=sk-ant-...
 LOCAL_DB_PATH=./data/output/iuris.db
-MODELO_PRINCIPAL=claude-sonnet-4-5
-MODELO_ECONOMICO=claude-haiku-4-5
+MODELO_PRINCIPAL=claude-sonnet-5
+MODELO_ECONOMICO=claude-haiku-5-5
 ENV
 
 cat > "$DEST/iniciar.command" <<'SH'
