@@ -198,7 +198,7 @@ export async function verificarInconstitucionalidad({ normaId = "", articulo = "
   const PRECEDENTES_INCONSTITUCIONALIDAD = [
     {
       norma: "Ley 24.557 art. 39 inc. 1 (LRT)",
-      patron: /art(?:iculo|\.)?\s*39.*24\.?557|lrt.*39/i,
+      patron: /(?:art(?:iculo|\.)?\s*39.*24\.?557|24\.?557.*(?:art(?:iculo|\.)?\s*)?39|lrt.*39)/i,
       fallo: "Aquino, Isacio c/ Cargo Servicios Industriales S.A.",
       cita: "Fallos 327:3753 (2004)",
       holding: "Es inconstitucional eximir al empleador de responsabilidad civil privando al trabajador de la reparación integral del daño según el derecho común.",
@@ -206,7 +206,7 @@ export async function verificarInconstitucionalidad({ normaId = "", articulo = "
     },
     {
       norma: "Ley 23.737 art. 14 segundo párrafo",
-      patron: /14.*23\.?737|estupefacientes.*consumo\s+personal/i,
+      patron: /(?:14.*23\.?737|23\.?737.*14|estupefacientes.*consumo\s+personal)/i,
       fallo: "Arriola, Sebastián y otros",
       cita: "Fallos 332:1963 (2009)",
       holding: "Es inconstitucional penalizar la tenencia de estupefacientes para consumo personal que no traiga peligro concreto a terceros por violentar el art. 19 de la CN.",
@@ -222,7 +222,7 @@ export async function verificarInconstitucionalidad({ normaId = "", articulo = "
     },
     {
       norma: "Ley 24.557 art. 21 y 22 (Comisiones Médicas obligatorias)",
-      patron: /art(?:iculo|\.)?\s*21.*24\.?557|comisiones\s+medicas.*castillo/i,
+      patron: /(?:art(?:iculo|\.)?\s*21.*24\.?557|24\.?557.*(?:art(?:iculo|\.)?\s*)?21|comisiones\s+medicas.*castillo)/i,
       fallo: "Castillo, Ángel c/ Cerámica Alberdi S.A.",
       cita: "Fallos 327:3610 (2004)",
       holding: "Es inconstitucional otorgar competencia federal exclusiva a las comisiones médicas para materias de derecho común y desplazar a los jueces laborales locales.",
@@ -230,7 +230,7 @@ export async function verificarInconstitucionalidad({ normaId = "", articulo = "
     },
     {
       norma: "Ley 24.557 art. 46 (Competencia federal de apelación)",
-      patron: /art(?:iculo|\.)?\s*46.*24\.?557/i,
+      patron: /(?:art(?:iculo|\.)?\s*46.*24\.?557|24\.?557.*(?:art(?:iculo|\.)?\s*)?46)/i,
       fallo: "Castillo / Obregón",
       cita: "Fallos 327:3610 / Fallos 335:663",
       holding: "Inconstitucionalidad de la vía recursiva ante la Cámara Federal de la Seguridad Social para reclamos de derecho laboral local.",
